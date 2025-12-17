@@ -1,0 +1,234 @@
+---
+Metadata:
+  AWSToolsMetrics:
+    IaC_Generator: "arn:aws:cloudformation:eu-north-1:430241514154:generatedTemplate/8386474e-680f-4e3f-bec3-26cde9cd42c8"
+Resources:
+  EC2RouteCL:
+    UpdateReplacePolicy: "Retain"
+    Type: "AWS::EC2::Route"
+    DeletionPolicy: "Retain"
+    Properties:
+      RouteTableId:
+        Ref: "EC2RouteTableET"
+      DestinationCidrBlock: "0.0.0.0/0"
+      GatewayId:
+        Ref: "EC2InternetGateway"
+      VpcEndpointId: "igw-0dd52a9c5ed5f1bbb"
+  EC2RouteTableET:
+    UpdateReplacePolicy: "Retain"
+    Type: "AWS::EC2::RouteTable"
+    DeletionPolicy: "Retain"
+    Properties:
+      VpcId:
+        Ref: "EC2VPC"
+      Tags:
+      - Value: "vpc-lab1-public-rt"
+        Key: "Name"
+  Route53ResolverResolverRuleAssociation:
+    UpdateReplacePolicy: "Retain"
+    Type: "AWS::Route53Resolver::ResolverRuleAssociation"
+    DeletionPolicy: "Retain"
+    Properties:
+      VPCId:
+        Ref: "EC2VPC"
+      ResolverRuleId: "rslvr-autodefined-rr-internet-resolver"
+      Name: "System Rule Association"
+  EC2SubnetHF:
+    UpdateReplacePolicy: "Retain"
+    Type: "AWS::EC2::Subnet"
+    DeletionPolicy: "Retain"
+    Properties:
+      MapPublicIpOnLaunch: false
+      EnableDns64: false
+      VpcId:
+        Ref: "EC2VPC"
+      AvailabilityZoneId: "eun1-az1"
+      PrivateDnsNameOptionsOnLaunch:
+        EnableResourceNameDnsARecord: false
+        HostnameType: "ip-name"
+        EnableResourceNameDnsAAAARecord: false
+      CidrBlock: "10.0.0.32/27"
+      Ipv6Native: false
+      Tags:
+      - Value: "vpc-lab1-private"
+        Key: "Name"
+  EC2DHCPOptions:
+    UpdateReplacePolicy: "Retain"
+    Type: "AWS::EC2::DHCPOptions"
+    DeletionPolicy: "Retain"
+    Properties:
+      DomainName: "eu-north-1.compute.internal"
+      DomainNameServers:
+      - "AmazonProvidedDNS"
+      Tags: []
+  EC2Subnet:
+    UpdateReplacePolicy: "Retain"
+    Type: "AWS::EC2::Subnet"
+    DeletionPolicy: "Retain"
+    Properties:
+      MapPublicIpOnLaunch: false
+      EnableDns64: false
+      VpcId:
+        Ref: "EC2VPC"
+      AvailabilityZoneId: "eun1-az1"
+      PrivateDnsNameOptionsOnLaunch:
+        EnableResourceNameDnsARecord: false
+        HostnameType: "ip-name"
+        EnableResourceNameDnsAAAARecord: false
+      CidrBlock: "10.0.0.0/27"
+      Ipv6Native: false
+      Tags:
+      - Value: "vpc-lab1-public"
+        Key: "Name"
+  EC2Route:
+    UpdateReplacePolicy: "Retain"
+    Type: "AWS::EC2::Route"
+    DeletionPolicy: "Retain"
+    Properties:
+      RouteTableId:
+        Ref: "EC2RouteTable"
+      DestinationCidrBlock:
+        Fn::GetAtt:
+        - "EC2VPC"
+        - "CidrBlock"
+      GatewayId: "local"
+      VpcEndpointId: "local"
+  EC2SecurityGroup:
+    UpdateReplacePolicy: "Retain"
+    Type: "AWS::EC2::SecurityGroup"
+    DeletionPolicy: "Retain"
+    Properties:
+      GroupDescription: "default VPC security group"
+      GroupName: "default"
+      VpcId:
+        Ref: "EC2VPC"
+      SecurityGroupIngress:
+      - IpProtocol: "-1"
+        FromPort: -1
+        SourceSecurityGroupId:
+          Fn::GetAtt:
+          - "EC2VPC"
+          - "DefaultSecurityGroup"
+        ToPort: -1
+        SourceSecurityGroupOwnerId: "430241514154"
+      SecurityGroupEgress:
+      - CidrIp: "0.0.0.0/0"
+        IpProtocol: "-1"
+        FromPort: -1
+        ToPort: -1
+  EC2SubnetNetworkAclAssociation:
+    UpdateReplacePolicy: "Retain"
+    Type: "AWS::EC2::SubnetNetworkAclAssociation"
+    DeletionPolicy: "Retain"
+    Properties:
+      NetworkAclId:
+        Ref: "EC2NetworkAcl"
+      SubnetId:
+        Ref: "EC2Subnet"
+  EC2RouteQo:
+    UpdateReplacePolicy: "Retain"
+    Type: "AWS::EC2::Route"
+    DeletionPolicy: "Retain"
+    Properties:
+      RouteTableId:
+        Ref: "EC2RouteTableI4"
+      DestinationCidrBlock:
+        Fn::GetAtt:
+        - "EC2VPC"
+        - "CidrBlock"
+      GatewayId: "local"
+      VpcEndpointId: "local"
+  EC2RouteTableI4:
+    UpdateReplacePolicy: "Retain"
+    Type: "AWS::EC2::RouteTable"
+    DeletionPolicy: "Retain"
+    Properties:
+      VpcId:
+        Ref: "EC2VPC"
+  EC2SubnetNetworkAclAssociationFz:
+    UpdateReplacePolicy: "Retain"
+    Type: "AWS::EC2::SubnetNetworkAclAssociation"
+    DeletionPolicy: "Retain"
+    Properties:
+      NetworkAclId:
+        Ref: "EC2NetworkAcl"
+      SubnetId:
+        Ref: "EC2SubnetHF"
+  EC2VPCDHCPOptionsAssociation:
+    UpdateReplacePolicy: "Retain"
+    Type: "AWS::EC2::VPCDHCPOptionsAssociation"
+    DeletionPolicy: "Retain"
+    Properties:
+      VpcId:
+        Ref: "EC2VPC"
+      DhcpOptionsId:
+        Ref: "EC2DHCPOptions"
+  EC2VPC:
+    UpdateReplacePolicy: "Retain"
+    Type: "AWS::EC2::VPC"
+    DeletionPolicy: "Retain"
+    Properties:
+      CidrBlock: "10.0.0.0/24"
+      EnableDnsSupport: true
+      InstanceTenancy: "default"
+      EnableDnsHostnames: false
+      Tags:
+      - Value: "vpc-lab1"
+        Key: "Name"
+  EC2RouteTable:
+    UpdateReplacePolicy: "Retain"
+    Type: "AWS::EC2::RouteTable"
+    DeletionPolicy: "Retain"
+    Properties:
+      VpcId:
+        Ref: "EC2VPC"
+      Tags:
+      - Value: "vpc-lab1-private-rt"
+        Key: "Name"
+  EC2SubnetRouteTableAssociationY6:
+    UpdateReplacePolicy: "Retain"
+    Type: "AWS::EC2::SubnetRouteTableAssociation"
+    DeletionPolicy: "Retain"
+    Properties:
+      RouteTableId:
+        Ref: "EC2RouteTableET"
+      SubnetId:
+        Ref: "EC2Subnet"
+  EC2InternetGateway:
+    UpdateReplacePolicy: "Retain"
+    Type: "AWS::EC2::InternetGateway"
+    DeletionPolicy: "Retain"
+    Properties:
+      Tags:
+      - Value: "vpc-lab1-igt"
+        Key: "Name"
+  EC2SubnetRouteTableAssociation:
+    UpdateReplacePolicy: "Retain"
+    Type: "AWS::EC2::SubnetRouteTableAssociation"
+    DeletionPolicy: "Retain"
+    Properties:
+      RouteTableId:
+        Ref: "EC2RouteTable"
+      SubnetId:
+        Ref: "EC2SubnetHF"
+  EC2RouteYi:
+    UpdateReplacePolicy: "Retain"
+    Type: "AWS::EC2::Route"
+    DeletionPolicy: "Retain"
+    Properties:
+      RouteTableId:
+        Ref: "EC2RouteTableET"
+      DestinationCidrBlock:
+        Fn::GetAtt:
+        - "EC2VPC"
+        - "CidrBlock"
+      GatewayId: "local"
+      VpcEndpointId: "local"
+  EC2NetworkAcl:
+    UpdateReplacePolicy: "Retain"
+    Type: "AWS::EC2::NetworkAcl"
+    DeletionPolicy: "Retain"
+    Properties:
+      VpcId:
+        Ref: "EC2VPC"
+      Tags: []
